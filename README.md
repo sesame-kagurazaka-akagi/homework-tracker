@@ -1,1 +1,447 @@
-# homework-tracker
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="宿題トラッカー">
+<title>宿題トラッカー</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,sans-serif;background:#f5f5f5;max-width:480px;margin:0 auto;}
+.top-bar{display:flex;background:#fff;border-bottom:1px solid #e0e0e0;position:sticky;top:0;z-index:20;overflow-x:auto;}
+.class-tab{flex-shrink:0;padding:12px 16px;font-size:13px;color:#888;cursor:pointer;border:none;background:none;border-bottom:3px solid transparent;white-space:nowrap;}
+.class-tab.on{color:#222;border-bottom-color:#222;font-weight:700;}
+.tab-bar{display:flex;background:#f9f9f9;border-bottom:1px solid #e0e0e0;}
+.tab{flex:1;padding:10px 2px;font-size:11px;text-align:center;color:#888;cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;}
+.tab.on{color:#222;border-bottom-color:#222;font-weight:600;}
+.screen{display:none;padding:16px;}
+.screen.active{display:block;}
+.card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.07);}
+.section-title{font-size:13px;color:#888;font-weight:600;margin-bottom:12px;}
+.date-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+.date-nav button{width:32px;height:32px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:18px;color:#333;}
+.date-nav span{font-size:15px;font-weight:600;color:#222;}
+.date-selector{display:flex;gap:8px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px;}
+.date-btn{flex-shrink:0;padding:6px 12px;border-radius:20px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:13px;color:#555;}
+.date-btn.on{background:#222;color:#fff;border-color:#222;}
+.student-check-row{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f0f0f0;}
+.student-check-row:last-child{border-bottom:none;}
+.st-name{font-size:15px;font-weight:600;color:#222;}
+.st-count{font-size:12px;color:#888;margin-top:2px;}
+.big-check{width:28px;height:28px;accent-color:#60a5fa;cursor:pointer;}
+.save-day-btn{width:100%;padding:12px;border-radius:10px;border:none;background:#222;color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:12px;}
+.month-input-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0;}
+.month-input-row:last-child{border-bottom:none;}
+.month-input-row label{font-size:14px;color:#333;font-weight:600;}
+.month-input-row input{width:70px;font-size:16px;font-weight:700;text-align:center;border:1px solid #ddd;border-radius:8px;padding:6px;color:#222;}
+.month-save-btn{width:100%;padding:12px;border-radius:10px;border:none;background:#f59e0b;color:#fff;font-size:15px;font-weight:600;cursor:pointer;margin-top:12px;}
+.week-toggle{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid #f0f0f0;}
+.week-toggle label{font-size:14px;color:#333;font-weight:600;}
+.toggle-sw{position:relative;width:44px;height:26px;}
+.toggle-sw input{opacity:0;width:0;height:0;}
+.toggle-sl{position:absolute;cursor:pointer;top:0;left:0;right:0;bottom:0;background:#ddd;border-radius:26px;transition:.3s;}
+.toggle-sl:before{position:absolute;content:"";height:20px;width:20px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s;}
+input:checked+.toggle-sl{background:#60a5fa;}
+input:checked+.toggle-sl:before{transform:translateX(18px);}
+.elmo-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #f0f0f0;}
+.elmo-row:last-child{border-bottom:none;}
+.elmo-name{font-size:14px;color:#333;}
+.elmo-check{width:24px;height:24px;accent-color:#60a5fa;cursor:pointer;}
+.summary-table{width:100%;border-collapse:collapse;font-size:13px;}
+.summary-table th{background:#f5f5f5;padding:8px 6px;text-align:center;font-weight:600;color:#555;border-bottom:1px solid #e0e0e0;font-size:11px;}
+.summary-table td{padding:8px 6px;text-align:center;border-bottom:1px solid #f0f0f0;color:#222;font-size:12px;}
+.summary-table td:first-child{text-align:left;font-weight:600;}
+.season-card{background:#fff;border-radius:14px;padding:16px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,0.07);}
+.sname{font-size:15px;font-weight:600;margin-bottom:10px;color:#222;}
+.stitle{font-size:12px;font-weight:600;color:#555;margin:10px 0 6px;}
+.srow{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid #f0f0f0;font-size:13px;}
+.spt{font-weight:700;color:#1d4ed8;}
+.carry{background:#fffbeb;border-radius:8px;padding:6px 10px;font-size:12px;color:#854d0e;margin:6px 0;}
+.msg-box{background:#fff;border-radius:14px;padding:16px;font-size:14px;line-height:1.8;color:#222;white-space:pre-wrap;box-shadow:0 1px 4px rgba(0,0,0,0.07);}
+.copy-btn{margin-top:10px;width:100%;padding:12px;border-radius:10px;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:14px;font-weight:600;color:#333;}
+.msel{font-size:14px;padding:6px 10px;border-radius:10px;border:1px solid #ddd;background:#fff;color:#222;margin-bottom:14px;width:100%;}
+.srow2{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.srow2 input[type=text]{flex:1;font-size:15px;padding:8px 12px;border-radius:10px;border:1px solid #ddd;background:#fff;color:#222;}
+.dbtn{width:30px;height:30px;border-radius:50%;border:1px solid #ddd;background:none;cursor:pointer;color:#888;}
+.add-btn{width:100%;padding:10px;border:1.5px dashed #ddd;border-radius:10px;background:none;cursor:pointer;font-size:14px;color:#888;margin-top:4px;}
+.cfg-save-btn{width:100%;padding:12px;border-radius:10px;border:none;background:#222;cursor:pointer;font-size:15px;font-weight:600;color:#fff;margin-top:14px;}
+.month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.month-nav button{width:32px;height:32px;border-radius:50%;border:1px solid #ddd;background:#fff;cursor:pointer;font-size:18px;color:#333;}
+.month-nav span{font-size:15px;font-weight:600;color:#222;}
+.badge-ok{background:#dcfce7;color:#166534;font-size:11px;padding:2px 8px;border-radius:20px;}
+.badge-no{background:#f3f4f6;color:#6b7280;font-size:11px;padding:2px 8px;border-radius:20px;}
+</style>
+</head>
+<body>
+<div class="top-bar" id="ctabs"></div>
+<div class="tab-bar">
+  <button class="tab on" onclick="showSub('ondoku',this)">音読</button>
+  <button class="tab" onclick="showSub('review',this)">ホームレビュー</button>
+  <button class="tab" onclick="showSub('elmo',this)">エルモ</button>
+  <button class="tab" onclick="showSub('season',this)">集計</button>
+  <button class="tab" onclick="showSub('msg',this)">メッセージ</button>
+  <button class="tab" onclick="showSub('cfg',this)">設定</button>
+</div>
+
+<div id="s-ondoku" class="screen active">
+  <p class="section-title">音読チェック</p>
+  <div class="month-nav">
+    <button onclick="pm()">&#8249;</button>
+    <span id="ondoku-month-label"></span>
+    <button onclick="nm()">&#8250;</button>
+  </div>
+  <div class="date-selector" id="date-selector"></div>
+  <div class="card" id="ondoku-checklist"></div>
+</div>
+
+<div id="s-review" class="screen">
+  <p class="section-title">ホームレビュー（月次入力）</p>
+  <div class="month-nav">
+    <button onclick="rpm()">&#8249;</button>
+    <span id="review-month-label"></span>
+    <button onclick="rnm()">&#8250;</button>
+  </div>
+  <div class="card" id="review-inputs"></div>
+  <button class="month-save-btn" onclick="saveReview()">保存する</button>
+</div>
+
+<div id="s-elmo" class="screen">
+  <p class="section-title">エルモのホームワーク</p>
+  <div class="month-nav">
+    <button onclick="epm()">&#8249;</button>
+    <span id="elmo-month-label"></span>
+    <button onclick="enm()">&#8250;</button>
+  </div>
+  <div id="elmo-weeks"></div>
+</div>
+
+<div id="s-season" class="screen">
+  <p class="section-title">集計</p>
+  <select class="msel" id="season-sel" onchange="renderSeason()"></select>
+  <div id="season-content"></div>
+</div>
+
+<div id="s-msg" class="screen">
+  <p class="section-title">保護者向けメッセージ</p>
+  <select class="msel" id="msel" onchange="renderMsg()"></select>
+  <div class="msg-box" id="msgout"></div>
+  <button class="copy-btn" onclick="copyMsg()">コピーする</button>
+</div>
+
+<div id="s-cfg" class="screen">
+  <p class="section-title" id="cfg-title">設定</p>
+  <div id="namelist"></div>
+  <button class="add-btn" onclick="addSt()">+ 生徒を追加</button>
+  <button class="cfg-save-btn" onclick="saveNames()">保存する</button>
+</div>
+
+<script>
+var MN=['1月','2月','3月','4月','5月','6月','7月','8月','9月','10月','11月','12月'];
+var SS=[{n:'春',m:[3,4,5],i:'🌸'},{n:'夏',m:[6,7,8],i:'☀️'},{n:'秋',m:[9,10,11],i:'🍂'},{n:'冬',m:[12,1,2],i:'⛄️'}];
+var CL=[
+  {id:'p3',name:'P3教室',ame:true,st:['あかり','けんた','まさき','しゅうや','そう','はやと']},
+  {id:'p4',name:'P4オンライン',ame:false,st:['岡埜朱里','石母田咲希','神戸はると','神田ともあき']}
+];
+var DAT={};
+var ci=0;
+var now=new Date();
+var cy=now.getFullYear(),cm=now.getMonth()+1;
+var ry=now.getFullYear(),rm=now.getMonth()+1;
+var ey=now.getFullYear(),em=now.getMonth()+1;
+var selDay=now.getDate();
+var csub='ondoku';
+
+try{var t=localStorage.getItem('oc2');if(t)CL=JSON.parse(t);}catch(e){}
+try{var t2=localStorage.getItem('od2');if(t2)DAT=JSON.parse(t2);}catch(e){}
+
+function sv(){
+  try{localStorage.setItem('oc2',JSON.stringify(CL));localStorage.setItem('od2',JSON.stringify(DAT));}catch(e){}
+}
+function pad(n){return String(n).padStart(2,'0');}
+function dim(y,m){return new Date(y,m,0).getDate();}
+
+// 音読データ
+function ondokuKey(id,n,y,m,d){return 'on|'+id+'|'+n+'|'+y+'-'+pad(m)+'-'+pad(d);}
+function getOndoku(id,n,y,m,d){return DAT[ondokuKey(id,n,y,m,d)]||false;}
+function setOndoku(id,n,y,m,d,v){DAT[ondokuKey(id,n,y,m,d)]=v;sv();}
+function monthOndokuCount(id,n,y,m){
+  var c=0,D=dim(y,m);
+  for(var d=1;d<=D;d++)if(getOndoku(id,n,y,m,d))c++;
+  return c;
+}
+function weekOndokuCount(id,n,y,m){
+  var now2=new Date(),ws=new Date(now2);ws.setDate(now2.getDate()-now2.getDay());
+  var c=0;
+  for(var i=0;i<7;i++){
+    var dd=new Date(ws);dd.setDate(ws.getDate()+i);
+    if(dd.getFullYear()===y&&dd.getMonth()+1===m&&getOndoku(id,n,y,m,dd.getDate()))c++;
+  }
+  return c;
+}
+
+// ホームレビューデータ
+function reviewKey(id,n,y,m){return 'rv|'+id+'|'+n+'|'+y+'-'+pad(m);}
+function getReview(id,n,y,m){return DAT[reviewKey(id,n,y,m)]||0;}
+function setReview(id,n,y,m,v){DAT[reviewKey(id,n,y,m)]=parseInt(v)||0;sv();}
+
+// エルモデータ
+function elmoWeekKey(id,n,y,m,w){return 'el|'+id+'|'+n+'|'+y+'-'+pad(m)+'-w'+w;}
+function getElmo(id,n,y,m,w){return DAT[elmoWeekKey(id,n,y,m,w)]||false;}
+function setElmo(id,n,y,m,w,v){DAT[elmoWeekKey(id,n,y,m,w)]=v;sv();}
+function elmoActiveKey(id,y,m,w){return 'elact|'+id+'|'+y+'-'+pad(m)+'-w'+w;}
+function getElmoActive(id,y,m,w){return DAT[elmoActiveKey(id,y,m,w)]||false;}
+function setElmoActive(id,y,m,w,v){DAT[elmoActiveKey(id,y,m,w)]=v;sv();}
+
+function weeksInMonth(y,m){
+  var first=new Date(y,m-1,1).getDay();
+  var days=dim(y,m);
+  return Math.ceil((first+days)/7);
+}
+function weekLabel(y,m,w){
+  var first=new Date(y,m-1,1).getDay();
+  var start=1+(w===0?0:7*w-first);
+  if(start<1)start=1;
+  var end=start+6;
+  if(end>dim(y,m))end=dim(y,m);
+  return m+'月'+start+'日〜'+end+'日';
+}
+
+function renderTabs(){
+  var el=document.getElementById('ctabs');el.innerHTML='';
+  for(var i=0;i<CL.length;i++){
+    (function(idx){
+      var b=document.createElement('button');
+      b.className='class-tab'+(idx===ci?' on':'');
+      b.textContent=CL[idx].name;
+      b.onclick=function(){ci=idx;renderTabs();renderSub2();};
+      el.appendChild(b);
+    })(i);
+  }
+}
+
+function renderOndoku(){
+  var cl=CL[ci],y=cy,m=cm;
+  document.getElementById('ondoku-month-label').textContent=y+'年'+MN[m-1];
+  var days=dim(y,m);
+  var sel=document.getElementById('date-selector');
+  var h='';
+  for(var d=1;d<=days;d++){
+    var active=d===selDay;
+    h+='<button class="date-btn'+(active?' on':'')+'" onclick="selDate('+d+')">'+d+'日</button>';
+  }
+  sel.innerHTML=h;
+  var cl2=CL[ci];
+  var ch='';
+  for(var si=0;si<cl2.st.length;si++){
+    var name=cl2.st[si];
+    var checked=getOndoku(cl2.id,name,y,m,selDay);
+    var mc=monthOndokuCount(cl2.id,name,y,m);
+    var wc=weekOndokuCount(cl2.id,name,y,m);
+    var ame=cl2.ame&&wc>=5;
+    ch+='<div class="student-check-row">';
+    ch+='<div><div class="st-name">'+name+(ame?' 🍬':'')+'</div>';
+    ch+='<div class="st-count">今月'+mc+'回 / 今週'+wc+'回</div></div>';
+    ch+='<input type="checkbox" class="big-check" id="ck-'+si+'"'+(checked?' checked':'')+' onchange="toggleOndoku(\''+name.replace(/'/g,"\\'")+'\','+si+')">';
+    ch+='</div>';
+  }
+  document.getElementById('ondoku-checklist').innerHTML=ch;
+}
+
+function selDate(d){
+  selDay=d;
+  renderOndoku();
+}
+
+function toggleOndoku(name,si){
+  var cl=CL[ci];
+  var v=document.getElementById('ck-'+si).checked;
+  setOndoku(cl.id,name,cy,cm,selDay,v);
+  renderOndoku();
+}
+
+function pm(){cm--;if(cm<1){cm=12;cy--;}selDay=1;renderOndoku();}
+function nm(){cm++;if(cm>12){cm=1;cy++;}selDay=1;renderOndoku();}
+
+function renderReview(){
+  var cl=CL[ci];
+  document.getElementById('review-month-label').textContent=ry+'年'+MN[rm-1];
+  var h='';
+  for(var si=0;si<cl.st.length;si++){
+    var name=cl.st[si];
+    var v=getReview(cl.id,name,ry,rm);
+    h+='<div class="month-input-row">';
+    h+='<label>'+name+'</label>';
+    h+='<input type="number" min="0" max="31" value="'+v+'" id="rv-'+si+'">';
+    h+='</div>';
+  }
+  document.getElementById('review-inputs').innerHTML=h;
+}
+
+function saveReview(){
+  var cl=CL[ci];
+  for(var si=0;si<cl.st.length;si++){
+    var v=document.getElementById('rv-'+si).value;
+    setReview(cl.id,cl.st[si],ry,rm,v);
+  }
+  var btn=document.querySelector('.month-save-btn');
+  btn.textContent='保存しました！';setTimeout(function(){btn.textContent='保存する';},1500);
+}
+
+function rpm(){rm--;if(rm<1){rm=12;ry--;}renderReview();}
+function rnm(){rm++;if(rm>12){rm=1;ry++;}renderReview();}
+
+function renderElmo(){
+  var cl=CL[ci];
+  document.getElementById('elmo-month-label').textContent=ey+'年'+MN[em-1];
+  var weeks=weeksInMonth(ey,em);
+  var h='';
+  for(var w=0;w<weeks;w++){
+    var active=getElmoActive(cl.id,ey,em,w);
+    h+='<div class="card">';
+    h+='<div class="week-toggle">';
+    h+='<label>第'+(w+1)+'週（'+weekLabel(ey,em,w)+'）</label>';
+    h+='<label class="toggle-sw"><input type="checkbox" id="elact-'+w+'"'+(active?' checked':'')+' onchange="toggleElmoActive('+w+')"><span class="toggle-sl"></span></label>';
+    h+='</div>';
+    if(active){
+      for(var si=0;si<cl.st.length;si++){
+        var name=cl.st[si];
+        var done=getElmo(cl.id,name,ey,em,w);
+        h+='<div class="elmo-row">';
+        h+='<span class="elmo-name">'+name+'</span>';
+        h+='<input type="checkbox" class="elmo-check" id="elmo-'+w+'-'+si+'"'+(done?' checked':'')+' onchange="toggleElmo(\''+name.replace(/'/g,"\\'")+'\','+w+','+si+')">';
+        h+='</div>';
+      }
+    }
+    h+='</div>';
+  }
+  document.getElementById('elmo-weeks').innerHTML=h;
+}
+
+function toggleElmoActive(w){
+  var cl=CL[ci];
+  var v=document.getElementById('elact-'+w).checked;
+  setElmoActive(cl.id,ey,em,w,v);
+  renderElmo();
+}
+
+function toggleElmo(name,w,si){
+  var cl=CL[ci];
+  var v=document.getElementById('elmo-'+w+'-'+si).checked;
+  setElmo(cl.id,name,ey,em,w,v);
+}
+
+function epm(){em--;if(em<1){em=12;ey--;}renderElmo();}
+function enm(){em++;if(em>12){em=1;ey++;}renderElmo();}
+
+function renderSeasonSelect(){
+  var sel=document.getElementById('season-sel');
+  var opts='';
+  for(var i=0;i<SS.length;i++)opts+='<option value="'+i+'">'+SS[i].i+' '+SS[i].n+'シーズン</option>';
+  sel.innerHTML=opts;
+  var nowM=new Date().getMonth()+1;
+  for(var i=0;i<SS.length;i++){
+    if(SS[i].m.indexOf(nowM)>=0){sel.value=i;break;}
+  }
+  renderSeason();
+}
+
+function renderSeason(){
+  var cl=CL[ci];
+  var sei=parseInt(document.getElementById('season-sel').value);
+  var s=SS[sei];
+  var now2=new Date(),ty=now2.getFullYear();
+  var h='';
+  for(var si=0;si<cl.st.length;si++){
+    var name=cl.st[si];
+    var tot=0;
+    h+='<div class="season-card"><div class="sname">'+name+'</div>';
+    h+='<div class="stitle">月別詳細</div>';
+    for(var mi2=0;mi2<s.m.length;mi2++){
+      var mo=s.m[mi2],yr=ty;
+      if(mo>=10&&now2.getMonth()+1<=2)yr=ty-1;
+      var rc=monthOndokuCount(cl.id,name,yr,mo);
+      var rv=getReview(cl.id,name,yr,mo);
+      var pt=(rc+rv)*5;
+      tot+=pt;
+      h+='<div class="srow"><span>'+MN[mo-1]+'</span><span>音読'+rc+' HR'+rv+'</span><span class="spt">'+pt+'pt</span></div>';
+    }
+    var units=[1000,700,500,200],card=0;
+    for(var ui=0;ui<units.length;ui++)while(tot-card>=units[ui])card+=units[ui];
+    h+='<div class="srow" style="font-weight:700"><span>合計</span><span></span><span class="spt">'+tot+'pt</span></div>';
+    h+='<div class="carry">図書カード '+card+'pt分 ／ 繰越 '+(tot-card)+'pt</div>';
+    h+='</div>';
+  }
+  document.getElementById('season-content').innerHTML=h;
+}
+
+function renderMsgScreen(){
+  var now2=new Date(),sel=document.getElementById('msel'),opts='';
+  for(var i=0;i<6;i++){
+    var d=new Date(now2.getFullYear(),now2.getMonth()-i,1);
+    var v=d.getFullYear()+'-'+pad(d.getMonth()+1);
+    opts+='<option value="'+v+'">'+d.getFullYear()+'年'+MN[d.getMonth()]+'</option>';
+  }
+  sel.innerHTML=opts;renderMsg();
+}
+
+function renderMsg(){
+  var cl=CL[ci],v=document.getElementById('msel').value,p=v.split('-'),y=parseInt(p[0]),m=parseInt(p[1]);
+  var lines='【'+y+'年'+MN[m-1]+'の家庭学習レポート】\n\nみなさん、今月もよくがんばりました！\n\n';
+  for(var i=0;i<cl.st.length;i++){
+    var n=cl.st[i];
+    var rc=monthOndokuCount(cl.id,n,y,m);
+    var rv=getReview(cl.id,n,y,m);
+    var pt=(rc+rv)*5;
+    lines+='⭐ '+n+' さん\n';
+    lines+='　音読：'+rc+'回　ホームレビュー：'+rv+'回　→ '+pt+'ポイント\n\n';
+  }
+  lines+='引き続き毎日の家庭学習をよろしくお願いします🎵';
+  document.getElementById('msgout').textContent=lines;
+}
+
+function copyMsg(){
+  navigator.clipboard.writeText(document.getElementById('msgout').textContent).then(function(){
+    var b=document.querySelector('.copy-btn');b.textContent='コピーしました！';setTimeout(function(){b.textContent='コピーする';},1500);
+  });
+}
+
+function renderCfg(){
+  var cl=CL[ci];
+  document.getElementById('cfg-title').textContent=cl.name+' — 生徒名編集';
+  var h='';
+  for(var i=0;i<cl.st.length;i++)
+    h+='<div class="srow2"><input type="text" value="'+cl.st[i]+'" id="sn-'+i+'"><button class="dbtn" onclick="delSt('+i+')">x</button></div>';
+  document.getElementById('namelist').innerHTML=h;
+}
+
+function addSt(){CL[ci].st.push('新しい生徒');renderCfg();}
+function delSt(i){CL[ci].st.splice(i,1);renderCfg();}
+function saveNames(){
+  var inputs=document.querySelectorAll('[id^="sn-"]'),arr=[];
+  for(var i=0;i<inputs.length;i++){var v=inputs[i].value.trim();if(v)arr.push(v);}
+  CL[ci].st=arr;sv();renderCfg();renderOndoku();
+  var b=document.querySelector('.cfg-save-btn');b.textContent='保存しました！';setTimeout(function(){b.textContent='保存する';},1500);
+}
+
+function showSub(name,tabEl){
+  document.querySelectorAll('.screen').forEach(function(s){s.classList.remove('active');});
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('on');});
+  document.getElementById('s-'+name).classList.add('active');
+  tabEl.classList.add('on');csub=name;renderSub2();
+}
+
+function renderSub2(){
+  if(csub==='ondoku')renderOndoku();
+  else if(csub==='review')renderReview();
+  else if(csub==='elmo')renderElmo();
+  else if(csub==='season')renderSeasonSelect();
+  else if(csub==='msg')renderMsgScreen();
+  else if(csub==='cfg')renderCfg();
+}
+
+renderTabs();
+renderOndoku();
+</script>
+</body>
+</html># homework-tracker
